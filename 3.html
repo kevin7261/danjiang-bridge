@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instagram 4:5 構圖頁 3</title>
+  <link rel="stylesheet" href="visualization.css">
+</head>
+<body>
+  <svg id="canvas"></svg>
+
+  <aside class="ui-panel control-panel">
+    <div class="ui-title">顯示控制</div>
+    <label class="toggle-button">
+      <span>日落底色（預設黑色）</span>
+      <input id="toggle-background" type="checkbox">
+    </label>
+    <label class="toggle-button">
+      <span>紅 border</span>
+      <input id="toggle-border" type="checkbox" checked>
+    </label>
+    <label class="toggle-button">
+      <span>白網格</span>
+      <input id="toggle-grid" type="checkbox" checked>
+    </label>
+  </aside>
+
+  <aside class="ui-panel prompt-panel">
+    <div class="ui-title">頁面連結</div>
+    <nav class="page-links" aria-label="頁面連結">
+      <a class="page-link" href="1.html">1</a>
+      <a class="page-link" href="2.html">2</a>
+      <a class="page-link active" href="3.html">3</a>
+      <a class="page-link" href="4.html">4</a>
+    </nav>
+    <div class="ui-title">建立 prompt</div>
+    <button class="copy-prompt-button" type="button">Copy prompt</button>
+    <div class="prompt-text">- 用 D3.js 建立 Instagram 4:5 視覺構圖網頁
+- 背景預設黑色，可切換成深藍到深橘的日落漸層
+- 畫面上方放 40×40 白色網格
+- 每 10 格主線加粗
+- 內部交叉點只顯示 5 的倍數編號
+- 紅色 border 可開關
+- 不畫原本的發光線組
+- 依編號 353 到 389 畫一條水平發光線
+- 依編號 1406 到 1442 畫一條波浪發光曲線，高度 1 格、寬度 8 格
+- 兩條線中間內插 7 條線，波浪高度也從平線逐步內插到 1 格
+- 9 條線的 8 個垂直間隔由上到下逐漸變大，間距為 2、3、3.4、3.5、3.6、3.7、3.8、4 格
+- 波浪線要交錯相位，不要全部一樣波形
+- 線條改成淺灰色
+- 最上面的線再往上 5 格，其他線位置不動
+- 畫面可 zoom in / zoom out 與拖曳</div>
+  </aside>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>
+    window.PAGE_CONFIG = {
+      showGuideLines: false,
+      customGuideLines: [
+        {
+          startLabel: 353,
+          endLabel: 389,
+        },
+        {
+          startLabel: 1406,
+          endLabel: 1442,
+          wave: {
+            heightCells: 1,
+            widthCells: 8,
+          },
+        },
+      ],
+      customGuideInterpolation: {
+        count: 7,
+        alternateWavePhase: true,
+        color: "#d9d9d9",
+        firstLineOffsetCellsY: -5,
+        gapCells: {
+          min: 2,
+          max: 4,
+          values: [2, 3, 3.4, 3.5, 3.6, 3.7, 3.8, 4],
+        },
+      },
+    };
+  </script>
+  <script src="visualization.js"></script>
+</body>
+</html>

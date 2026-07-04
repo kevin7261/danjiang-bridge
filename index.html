@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>淡江大橋構圖頁入口</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+      background: #000;
+      color: #fff;
+      font-family: Arial, "Noto Sans TC", sans-serif;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      padding: 32px;
+    }
+
+    main {
+      width: min(560px, 100%);
+      padding: 32px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      font-size: clamp(28px, 6vw, 48px);
+      letter-spacing: 0.08em;
+    }
+
+    p {
+      margin-bottom: 24px;
+      color: rgba(255, 255, 255, 0.72);
+      line-height: 1.6;
+    }
+
+    nav {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    a {
+      display: grid;
+      place-items: center;
+      min-height: 96px;
+      color: #c9fbff;
+      font-size: 28px;
+      font-weight: 700;
+      text-decoration: none;
+      background: rgba(126, 238, 255, 0.08);
+      border: 1px solid rgba(126, 238, 255, 0.34);
+      border-radius: 16px;
+      transition: transform 160ms ease, background 160ms ease,
+        box-shadow 160ms ease;
+    }
+
+    a:hover {
+      transform: translateY(-3px);
+      background: rgba(126, 238, 255, 0.16);
+      box-shadow: 0 0 26px rgba(126, 238, 255, 0.26);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>構圖頁入口</h1>
+    <p>選擇要開啟的 HTML 頁面。</p>
+    <nav aria-label="構圖頁連結">
+      <a href="1.html">1</a>
+      <a href="2.html">2</a>
+      <a href="3.html">3</a>
+      <a href="4.html">4</a>
+    </nav>
+  </main>
+</body>
+</html>
