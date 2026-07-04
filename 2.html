@@ -41,12 +41,12 @@
     <button class="copy-prompt-button" type="button">Copy prompt</button>
     <div class="prompt-text">- 用 D3.js 建立 Instagram 4:5 視覺構圖網頁
 - 背景預設黑色，可切換成深藍到深橘的日落漸層
-- 畫面上方放 40×40 白色網格
+- 畫面中央放 20×50 白色網格
 - 每 10 格主線加粗
-- 內部交叉點只顯示 5 的倍數編號
+- 交叉點含邊緣，只顯示 5 的倍數編號
 - 紅色 border 可開關
 - 不畫原本的發光線組
-- 以編號 1346 為圓心，半徑 10 格，畫一個白線圓
+- 以編號 956 為圓心，半徑 10 格，畫一個白線圓
 - 同樣圓心，畫半徑 10、12、15、18 格的四個白線圓
 - 四個圓改畫白線，不要 shadow，並可用顯示控制開關
 - 三個上半圓和中間最小的圓合併成一個 path
@@ -66,25 +66,25 @@
       showGuideLines: false,
       circles: [
         {
-          centerLabel: 1346,
+          centerLabel: 956,
           radiusCells: 10,
           color: "#ffffff",
           shadow: false,
         },
         {
-          centerLabel: 1346,
+          centerLabel: 956,
           radiusCells: 12,
           color: "#ffffff",
           shadow: false,
         },
         {
-          centerLabel: 1346,
+          centerLabel: 956,
           radiusCells: 15,
           color: "#ffffff",
           shadow: false,
         },
         {
-          centerLabel: 1346,
+          centerLabel: 956,
           radiusCells: 18,
           color: "#ffffff",
           shadow: false,
@@ -92,7 +92,7 @@
       ],
       circleVerticalIntersections: [
         {
-          centerLabel: 1346,
+          centerLabel: 956,
           innerCircleRadiusCells: 10,
           chordOffsetCellsByRadius: {
             12: 4,

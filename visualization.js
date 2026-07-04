@@ -2,6 +2,8 @@
 const IG_RATIO = 4 / 5;
 const GRID_COLS = 40;
 const GRID_ROWS = 40;
+const VISIBLE_GRID_COLS = 20;
+const VISIBLE_GRID_ROWS = 50;
 const BORDER_COLOR = "#ff0000";
 const GRID_COLOR = "rgba(255, 255, 255, 0.25)";
 const GRID_MAJOR_COLOR = "rgba(255, 255, 255, 0.45)";
@@ -25,7 +27,7 @@ const CIRCLE_SHADOWS = [
   { width: 14, opacity: 0.16 },
   { width: 8, opacity: 0.28 },
 ];
-const INTERPOLATED_LINE_COUNT = 6;
+const INTERPOLATED_LINE_COUNT = 8;
 const MIN_GUIDE_LINE_GAP_CELLS = 1;
 const MAX_GUIDE_LINE_GAP_CELLS = 4;
 const PAGE_CONFIG = window.PAGE_CONFIG || {};
@@ -50,35 +52,39 @@ function colorWithOpacity(color, opacity) {
   return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity})`;
 }
 
-function createExpandingTValues(lineCount, verticalSpanCells) {
+function createExpandingTValues(lineCount, verticalSpanCells, expandTowardStart) {
   const intervalCount = lineCount - 1;
-  let minGap = Math.min(
-    MIN_GUIDE_LINE_GAP_CELLS,
-    verticalSpanCells / intervalCount
-  );
-  const maxGapBySpan = (2 * verticalSpanCells) / intervalCount - minGap;
-  const maxGap = Math.min(
-    MAX_GUIDE_LINE_GAP_CELLS,
-    Math.max(minGap, maxGapBySpan)
-  );
-  minGap = Math.max(
-    minGap,
-    (2 * verticalSpanCells) / intervalCount - maxGap
-  );
-  const gaps = d3
+
+  if (intervalCount <= 0 || verticalSpanCells <= 0) {
+    return d3.range(lineCount).map((index) => index / (lineCount - 1));
+  }
+
+  if (intervalCount === 1) {
+    return [0, 1];
+  }
+
+  const minGap = MIN_GUIDE_LINE_GAP_CELLS;
+  const maxGap = MAX_GUIDE_LINE_GAP_CELLS;
+  const ratio = Math.pow(maxGap / minGap, 1 / (intervalCount - 1));
+
+  let gaps = d3
     .range(intervalCount)
-    .map((index) =>
-      intervalCount === 1
-        ? verticalSpanCells
-        : lerp(minGap, maxGap, index / (intervalCount - 1))
-    );
+    .map((index) => minGap * Math.pow(ratio, index));
+  const sum = d3.sum(gaps);
+
+  if (sum > 0) {
+    const scaleFactor = verticalSpanCells / sum;
+    gaps = gaps.map((gap) => gap * scaleFactor);
+  }
+
+  const orderedGaps = expandTowardStart ? gaps.slice().reverse() : gaps;
 
   const values = [0];
   let t = 0;
 
-  gaps.forEach((gap, index) => {
+  orderedGaps.forEach((gap, index) => {
     t += gap / verticalSpanCells;
-    values.push(index === intervalCount - 1 ? 1 : t);
+    values.push(index === orderedGaps.length - 1 ? 1 : t);
   });
 
   return values;
@@ -256,50 +262,58 @@ function render() {
   const x = (width - frameWidth) / 2;
   const y = 0;
 
-  const cellSize = frameWidth / GRID_COLS;
-  const gridHeight = cellSize * GRID_ROWS;
+  const visibleGridCellSize = Math.min(
+    frameWidth / VISIBLE_GRID_COLS,
+    frameHeight / VISIBLE_GRID_ROWS
+  );
+  const visibleGridWidth = visibleGridCellSize * VISIBLE_GRID_COLS;
+  const visibleGridHeight = visibleGridCellSize * VISIBLE_GRID_ROWS;
+  const visibleGridX = x + (frameWidth - visibleGridWidth) / 2;
+  const visibleGridY = y + (frameHeight - visibleGridHeight) / 2;
+  const cellSize = visibleGridCellSize;
+  const gridHeight = visibleGridHeight;
 
   if (uiState.showGrid) {
     const grid = content.append("g");
 
-    d3.range(GRID_COLS + 1).forEach((i) => {
-      const lx = x + i * cellSize;
+    d3.range(VISIBLE_GRID_COLS + 1).forEach((i) => {
+      const lx = visibleGridX + i * visibleGridCellSize;
       const major = isMajorGridLine(i);
       grid
         .append("line")
         .attr("x1", lx)
-        .attr("y1", y)
+        .attr("y1", visibleGridY)
         .attr("x2", lx)
-        .attr("y2", y + gridHeight)
+        .attr("y2", visibleGridY + visibleGridHeight)
         .attr("stroke", major ? GRID_MAJOR_COLOR : GRID_COLOR)
         .attr("stroke-width", major ? GRID_MAJOR_WIDTH : GRID_WIDTH)
         .attr("stroke-linecap", "round");
     });
 
-    d3.range(GRID_ROWS + 1).forEach((i) => {
-      const ly = y + i * cellSize;
+    d3.range(VISIBLE_GRID_ROWS + 1).forEach((i) => {
+      const ly = visibleGridY + i * visibleGridCellSize;
       const major = isMajorGridLine(i);
       grid
         .append("line")
-        .attr("x1", x)
+        .attr("x1", visibleGridX)
         .attr("y1", ly)
-        .attr("x2", x + frameWidth)
+        .attr("x2", visibleGridX + visibleGridWidth)
         .attr("y2", ly)
         .attr("stroke", major ? GRID_MAJOR_COLOR : GRID_COLOR)
         .attr("stroke-width", major ? GRID_MAJOR_WIDTH : GRID_WIDTH)
         .attr("stroke-linecap", "round");
     });
 
-    const labelSize = Math.max(6, cellSize * 0.5);
+    const labelSize = Math.max(6, visibleGridCellSize * 0.5);
     const points = [];
     let label = 1;
 
-    for (let row = 1; row < GRID_ROWS; row++) {
-      for (let col = 1; col < GRID_COLS; col++) {
+    for (let row = 0; row <= VISIBLE_GRID_ROWS; row++) {
+      for (let col = 0; col <= VISIBLE_GRID_COLS; col++) {
         if (label % 5 === 0) {
           points.push({
-            x: x + col * cellSize,
-            y: y + row * cellSize,
+            x: visibleGridX + col * visibleGridCellSize,
+            y: visibleGridY + row * visibleGridCellSize,
             text: label,
           });
         }
@@ -320,20 +334,20 @@ function render() {
   }
 
   function pointFromLabel(labelNumber) {
-    const pointsPerRow = GRID_COLS - 1;
-    const row = Math.floor((labelNumber - 1) / pointsPerRow) + 1;
-    const col = ((labelNumber - 1) % pointsPerRow) + 1;
+    const pointsPerRow = VISIBLE_GRID_COLS + 1;
+    const row = Math.floor((labelNumber - 1) / pointsPerRow);
+    const col = (labelNumber - 1) % pointsPerRow;
 
     return {
-      x: x + col * cellSize,
-      y: y + row * cellSize,
+      x: visibleGridX + col * visibleGridCellSize,
+      y: visibleGridY + row * visibleGridCellSize,
     };
   }
 
   function mirrorPoint(point) {
     return {
-      x: x + frameWidth - (point.x - x),
-      y: y + gridHeight - (point.y - y),
+      x: visibleGridX + visibleGridWidth - (point.x - visibleGridX),
+      y: visibleGridY + visibleGridHeight - (point.y - visibleGridY),
     };
   }
 
@@ -468,7 +482,7 @@ function render() {
 
       if (innerRadiusCells) {
         const innerRadius = innerRadiusCells * cellSize;
-        const gridBottom = y + gridHeight;
+        const gridBottom = visibleGridY + gridHeight;
 
         if (center.y + innerRadius <= gridBottom) {
           paths.push(
@@ -528,8 +542,8 @@ function render() {
             return;
           }
 
-          leftX = x + leftGridLine * cellSize;
-          rightX = x + rightGridLine * cellSize;
+          leftX = visibleGridX + leftGridLine * cellSize;
+          rightX = visibleGridX + rightGridLine * cellSize;
 
           const leftDx = leftX - center.x;
           const rightDx = rightX - center.x;
@@ -598,21 +612,24 @@ function render() {
   }
 
   const startLine = {
-    start: pointFromLabel(1445),
-    end: pointFromLabel(1449),
+    start: pointFromLabel(421),
+    end: pointFromLabel(15),
   };
   const endLine = {
-    start: pointFromLabel(743),
-    end: pointFromLabel(69),
+    start: pointFromLabel(1051),
+    end: pointFromLabel(1055),
   };
   const shortestVerticalSpanCells =
     Math.min(
       Math.abs(endLine.start.y - startLine.start.y),
       Math.abs(endLine.end.y - startLine.end.y)
-    ) / cellSize;
+    ) / visibleGridCellSize;
+  const startLineCenterY = (startLine.start.y + startLine.end.y) / 2;
+  const endLineCenterY = (endLine.start.y + endLine.end.y) / 2;
   const tValues = createExpandingTValues(
     INTERPOLATED_LINE_COUNT + 2,
-    shortestVerticalSpanCells
+    shortestVerticalSpanCells,
+    startLineCenterY < endLineCenterY
   );
   const guideLines = tValues.map((t) => {
     return {
@@ -754,11 +771,11 @@ function render() {
             strokeWidth: line.strokeWidth,
             wave: line.wave,
             start: {
-              x: x + frameWidth - (line.start.x - x),
+              x: visibleGridX + visibleGridWidth - (line.start.x - visibleGridX),
               y: line.start.y,
             },
             end: {
-              x: x + frameWidth - (line.end.x - x),
+              x: visibleGridX + visibleGridWidth - (line.end.x - visibleGridX),
               y: line.end.y,
             },
           }))

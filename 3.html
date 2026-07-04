@@ -37,13 +37,13 @@
     <button class="copy-prompt-button" type="button">Copy prompt</button>
     <div class="prompt-text">- 用 D3.js 建立 Instagram 4:5 視覺構圖網頁
 - 背景預設黑色，可切換成深藍到深橘的日落漸層
-- 畫面上方放 40×40 白色網格
+- 畫面中央放 20×50 白色網格
 - 每 10 格主線加粗
-- 內部交叉點只顯示 5 的倍數編號
+- 交叉點含邊緣，只顯示 5 的倍數編號
 - 紅色 border 可開關
 - 不畫原本的發光線組
-- 依編號 353 到 389 畫一條水平發光線
-- 依編號 1406 到 1442 畫一條波浪發光曲線，高度 1 格、寬度 8 格
+- 依編號 254 到 272 畫一條水平發光線
+- 依編號 989 到 1007 畫一條波浪發光曲線，高度 1 格、寬度 8 格
 - 兩條線中間內插 7 條線，波浪高度也從平線逐步內插到 1 格
 - 9 條線的 8 個垂直間隔由上到下逐漸變大，間距為 2、3、3.4、3.5、3.6、3.7、3.8、4 格
 - 波浪線要交錯相位，不要全部一樣波形
@@ -58,12 +58,12 @@
       showGuideLines: false,
       customGuideLines: [
         {
-          startLabel: 353,
-          endLabel: 389,
+          startLabel: 254,
+          endLabel: 272,
         },
         {
-          startLabel: 1406,
-          endLabel: 1442,
+          startLabel: 989,
+          endLabel: 1007,
           wave: {
             heightCells: 1,
             widthCells: 8,
