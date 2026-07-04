@@ -41,16 +41,71 @@
 - 每 10 格主線加粗
 - 內部交叉點只顯示 5 的倍數編號
 - 紅色 border 可開關
-- 依編號 1445 到 1449 畫一條淺藍色 2pt 發光線
-- 依編號 743 到69 畫一條淺藍色 2pt 發光線
-- 中間內插 6 條線
-- 全部 8 個線條 7 個間隔，越往上間隔逐漸變大，最小上下間距 1 格，最大間距上下4格，中間間距內插
-- 下方是淺藍色，上方是淺紫色，中間顏色內插
-- 右側同步畫左右上下翻轉版本，顏色也是翻轉
+- 不畫原本的發光線組
+- 以編號 253 到 1445 作為第一條基準線
+- 以編號 58 到 41 作為第二條基準線
+- 中間內插 4 條線，共 6 條線
+- 線0：實線
+- 線1：虛線，線 6pt 長、間隔 8pt
+- 線2：虛線，線 5pt 長、間隔 12pt
+- 線3：虛線，線 4pt 長、間隔 16pt
+- 線4：虛線，線 3pt 長、間隔 20pt
+- 線5：虛線，線 2pt 長、間隔 24pt
+- 右邊也畫左右相反的一樣 6 條線
 - 畫面可 zoom in / zoom out 與拖曳</div>
   </aside>
 
   <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>
+    window.PAGE_CONFIG = {
+      showGuideLines: false,
+      customGuideLines: [
+        {
+          startLabel: 253,
+          endLabel: 1445,
+        },
+        {
+          startLabel: 58,
+          endLabel: 41,
+        },
+      ],
+      customGuideInterpolation: {
+        count: 4,
+        dash: {
+          dashPt: 1,
+          gapPt: 10,
+          lineOverrides: {
+            0: {
+              solid: true,
+            },
+            1: {
+              dashPt: 6,
+              gapPt: 8,
+            },
+            2: {
+              dashPt: 5,
+              gapPt: 12,
+            },
+            3: {
+              dashPt: 4,
+              gapPt: 16,
+            },
+            4: {
+              dashPt: 3,
+              gapPt: 20,
+            },
+            5: {
+              dashPt: 2,
+              gapPt: 24,
+            },
+          },
+          startStrokeWidthPt: 2,
+          endStrokeWidthPt: 2,
+        },
+        mirrorHorizontal: true,
+      },
+    };
+  </script>
   <script src="visualization.js"></script>
 </body>
 </html>

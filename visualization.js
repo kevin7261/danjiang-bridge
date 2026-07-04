@@ -9,6 +9,7 @@ const GRID_WIDTH = 1;
 const GRID_MAJOR_WIDTH = 2.5;
 const GUIDE_LINE_BOTTOM_COLOR = "#c9fbff";
 const GUIDE_LINE_TOP_COLOR = "#d8b7ff";
+const PT_TO_PX = 4 / 3;
 const GUIDE_LINE_WIDTH = 2.6667; // 2pt
 const GUIDE_LINE_SHADOWS = [
   { width: 32, opacity: 0.025 },
@@ -271,7 +272,8 @@ function render() {
         .attr("x2", lx)
         .attr("y2", y + gridHeight)
         .attr("stroke", major ? GRID_MAJOR_COLOR : GRID_COLOR)
-        .attr("stroke-width", major ? GRID_MAJOR_WIDTH : GRID_WIDTH);
+        .attr("stroke-width", major ? GRID_MAJOR_WIDTH : GRID_WIDTH)
+        .attr("stroke-linecap", "round");
     });
 
     d3.range(GRID_ROWS + 1).forEach((i) => {
@@ -284,7 +286,8 @@ function render() {
         .attr("x2", x + frameWidth)
         .attr("y2", ly)
         .attr("stroke", major ? GRID_MAJOR_COLOR : GRID_COLOR)
-        .attr("stroke-width", major ? GRID_MAJOR_WIDTH : GRID_WIDTH);
+        .attr("stroke-width", major ? GRID_MAJOR_WIDTH : GRID_WIDTH)
+        .attr("stroke-linecap", "round");
     });
 
     const labelSize = Math.max(6, cellSize * 0.5);
@@ -380,8 +383,14 @@ function render() {
         .attr("d", linePath)
         .attr("fill", "none")
         .attr("stroke", (d) => d.color)
-        .attr("stroke-width", shadow.width)
+        .attr(
+          "stroke-width",
+          (d) =>
+            shadow.width * ((d.strokeWidth || GUIDE_LINE_WIDTH) / GUIDE_LINE_WIDTH)
+        )
         .attr("stroke-linecap", "round")
+        .attr("stroke-linejoin", "round")
+        .attr("stroke-dasharray", (d) => d.dashArray || null)
         .attr("opacity", shadow.opacity);
     });
 
@@ -393,8 +402,10 @@ function render() {
       .attr("d", linePath)
       .attr("fill", "none")
       .attr("stroke", (d) => d.color)
-      .attr("stroke-width", GUIDE_LINE_WIDTH)
+      .attr("stroke-width", (d) => d.strokeWidth || GUIDE_LINE_WIDTH)
       .attr("stroke-linecap", "round")
+      .attr("stroke-linejoin", "round")
+      .attr("stroke-dasharray", (d) => d.dashArray || null)
       .style(
         "filter",
         (d) =>
@@ -567,9 +578,8 @@ function render() {
         .attr("fill", "none")
         .attr("stroke", outlineColor)
         .attr("stroke-width", shadow.width)
-        .attr("stroke-linecap", "butt")
-        .attr("stroke-linejoin", "miter")
-        .attr("stroke-miterlimit", 10)
+        .attr("stroke-linecap", "round")
+        .attr("stroke-linejoin", "round")
         .attr("opacity", shadow.opacity);
     });
 
@@ -579,9 +589,8 @@ function render() {
       .attr("fill", "none")
       .attr("stroke", outlineColor)
       .attr("stroke-width", GUIDE_LINE_WIDTH)
-      .attr("stroke-linecap", "butt")
-      .attr("stroke-linejoin", "miter")
-      .attr("stroke-miterlimit", 10)
+      .attr("stroke-linecap", "round")
+      .attr("stroke-linejoin", "round")
       .style(
         "filter",
         "drop-shadow(0 0 4px rgba(255, 195, 122, 0.95)) drop-shadow(0 0 12px rgba(255, 195, 122, 0.7))"
@@ -678,6 +687,26 @@ function render() {
             widthCells: 1,
           };
           const heightCells = lerp(0, endWave.heightCells, t);
+          const dash = PAGE_CONFIG.customGuideInterpolation.dash;
+          const customDash =
+            dash?.lineOverrides?.[index] ?? dash?.lineOverrides?.[index + 1];
+          const strokeWidth =
+            dash && customDash?.strokeWidthPt
+              ? customDash.strokeWidthPt * PT_TO_PX
+              : dash
+              ? lerp(
+                  dash.startStrokeWidthPt ?? 2,
+                  dash.endStrokeWidthPt ?? 1,
+                  t
+                ) * PT_TO_PX
+              : undefined;
+          const dashArray =
+            dash && !customDash?.solid && (t > 0 || customDash)
+              ? `${(customDash?.dashPt ?? dash.dashPt ?? 1) * PT_TO_PX} ${
+                  (customDash?.gapPt ?? lerp(0, dash.gapPt ?? 8, t)) *
+                  PT_TO_PX
+                }`
+              : null;
           const firstLineOffsetY =
             index === 0
               ? (PAGE_CONFIG.customGuideInterpolation.firstLineOffsetCellsY ||
@@ -689,6 +718,9 @@ function render() {
               PAGE_CONFIG.customGuideInterpolation.color ||
               startGuideLine.color ||
               GUIDE_LINE_BOTTOM_COLOR,
+            dashArray,
+            lineCap: "round",
+            strokeWidth,
             wave:
               heightCells === 0
                 ? null
@@ -712,6 +744,26 @@ function render() {
         });
 
       drawGuideLines(interpolationLines);
+
+      if (PAGE_CONFIG.customGuideInterpolation.mirrorHorizontal) {
+        drawGuideLines(
+          interpolationLines.map((line) => ({
+            color: line.color,
+            dashArray: line.dashArray,
+            lineCap: line.lineCap,
+            strokeWidth: line.strokeWidth,
+            wave: line.wave,
+            start: {
+              x: x + frameWidth - (line.start.x - x),
+              y: line.start.y,
+            },
+            end: {
+              x: x + frameWidth - (line.end.x - x),
+              y: line.end.y,
+            },
+          }))
+        );
+      }
     } else {
       drawGuideLines(
         PAGE_CONFIG.customGuideLines.map((line) => ({
